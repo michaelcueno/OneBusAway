@@ -37,9 +37,10 @@ RouteArrival.prototype.requestResponse = function () {
 
 RouteArrival.prototype.send = function(routeTimes) {
     var response = "";
-    for (var i = 0; i < routeTimes.length; i++) {
-        response += buildResponse(routeTimes[i]);
-    }
+    routeTimes.reverse();
+    response += buildResponse(routeTimes.pop());
+    response += buildResponse(routeTimes.pop());
+    response += buildBriefResponse(routeTimes);
 
     this.response.tell(response);
 }
@@ -47,8 +48,6 @@ RouteArrival.prototype.send = function(routeTimes) {
 function buildResponse(routeTime) {
     var route = routeTime[0];
     var routeTime = routeTime[1];
-    log("Route: "+route);
-    log("time:" + routeTime);
     var response = "The next "+ route +" comes in " + routeTime + " "; 
     response += (routeTime == "NOW") ? "mother fucker" : 
                 (routeTime == 1) ?  "minute" : "minutes";
@@ -61,6 +60,19 @@ function buildResponse(routeTime) {
     response +=". ";
     return response;
 } 
+
+function buildBriefResponse(routeTimes) {
+    var response = "There's also a ";
+    while (routeTimes.length) {
+        var routeTime = routeTimes.pop();
+        var route = routeTime[0];
+        var time = routeTime[1];
+        response += route +" in " + time + " "; 
+        response += (time == "NOW") ? "mother fucker, " : 
+                    (time == 1) ?  "minute, " : "minutes, ";
+    }
+    return response;
+}
 
 function parseRoutesAndTimes($) {
     var arrayOfRoutes = $('.arrivalsRow').find('.arrivalsRouteEntry').find('a').map(function(i, val) {

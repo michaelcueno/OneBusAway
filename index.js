@@ -58,7 +58,7 @@ OneBusAway.prototype.eventHandlers.onSessionEnded = function (sessionEndedReques
 OneBusAway.prototype.intentHandlers = {
 
     // register custom intent handlers
-    OneBusAwayIntent: function (intent, session, response) {
+    GetRouteTimes : function (intent, session, response) {
         var arrival = new RouteArrival(response); // TODO: Cound get route information and inject it here
         arrival.requestResponse();
     }

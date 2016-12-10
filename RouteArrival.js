@@ -1,6 +1,6 @@
 'use strict'
 
-var DEBUG = false;
+var DEBUG = true;
 
 function log(msg)  {
     if (DEBUG) {
@@ -14,7 +14,7 @@ var cheerio = require("cheerio"),
 
 // TODO: pass in id, and route id for more generic handling
 function RouteArrival(response) {
-    this.fortyURL = "http://pugetsound.onebusaway.org/where/standard/stop.action?id=1_19360&route=1_102574";
+    this.url = "http://pugetsound.onebusaway.org/where/standard/stop.action?id=1_6050"
     this.response = response;
 }
 
@@ -26,39 +26,54 @@ RouteArrival.prototype.requestResponse = function () {
     var routeArrival = this;
 
 
-    request(this.fortyURL, function (error, response, html) {
+    request(this.url, function (error, response, html) {
       if (!error && response.statusCode == 200) {
         var $ = cheerio.load(html);
-        var times = parseOutTimes($);
+        var times = parseRoutesAndTimes($);
         routeArrival.send(times);
       }
     });
 }
 
-RouteArrival.prototype.send = function(times) {
-    var firstTime = times[0];
-    var introduction = "The next 40 comes in " + firstTime + " "; 
-    introduction += (firstTime == "NOW") ? "mother fucker" : 
-                    (firstTime == 1) ?  "minute" : "minutes";
-
-    if (times[0] < 4 && times[0] >= 0) {
-        introduction += ", you better run bitch"; 
-    } else if (times[0] < 0) {
-        introduction += ", so, invent time travel, or sit the fuck down for a minute";
+RouteArrival.prototype.send = function(routeTimes) {
+    var response = "";
+    for (var i = 0; i < routeTimes.length; i++) {
+        response += buildResponse(routeTimes[i]);
     }
 
-    if (times[1]) {
-        introduction += ". There's also one in " + times[1] + " minutes";
-    }
-
-    this.response.tell(introduction);
+    this.response.tell(response);
 }
 
-function parseOutTimes($) {
-    var arrayOfTimes = $('.arrivalsRow').find('.arrivalsStatusEntry').find('span').map(function( i, val) {
+function buildResponse(routeTime) {
+    var route = routeTime[0];
+    var routeTime = routeTime[1];
+    log("Route: "+route);
+    log("time:" + routeTime);
+    var response = "The next "+ route +" comes in " + routeTime + " "; 
+    response += (routeTime == "NOW") ? "mother fucker" : 
+                (routeTime == 1) ?  "minute" : "minutes";
+
+    if (routeTime < 4 && routeTime >= 0) {
+        response += ", you better run bitch"; 
+    } else if (routeTime < 0) {
+        response += ", so, invent time travel, or sit the fuck down for a minute";
+    }
+    response +=". ";
+    return response;
+} 
+
+function parseRoutesAndTimes($) {
+    var arrayOfRoutes = $('.arrivalsRow').find('.arrivalsRouteEntry').find('a').map(function(i, val) {
         return $(val).text();
     });
-    return arrayOfTimes;
+    var arrayOfTimes = $('.arrivalsRow').find('.arrivalsStatusEntry').find('span').map(function(i, val) {
+        return $(val).text();
+    });
+    var result = []
+    for (var i = 0; i< arrayOfRoutes.length - 1; i++) {
+        result.push([arrayOfRoutes[i], arrayOfTimes[i]]);
+    }
+    return result;
 }
 
 module.exports = RouteArrival;

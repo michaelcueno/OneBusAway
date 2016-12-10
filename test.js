@@ -9,5 +9,3 @@ var mockResponse = {
 var routeTest = new Route(mockResponse); 
 
 routeTest.requestResponse();
-
-console.log('hey');

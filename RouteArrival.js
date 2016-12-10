@@ -46,8 +46,8 @@ RouteArrival.prototype.send = function(routeTimes) {
 }
 
 function buildResponse(routeTime) {
-    var route = routeTime[0];
-    var routeTime = routeTime[1];
+    var route = sanitizeRoute(routeTime[0]);
+    var routeTime = sanitizeRoute(routeTime[1]);
     var response = "The next "+ route +" comes in " + routeTime + " "; 
     response += (routeTime == "NOW") ? "mother fucker" : 
                 (routeTime == 1) ?  "minute" : "minutes";
@@ -62,16 +62,24 @@ function buildResponse(routeTime) {
 } 
 
 function buildBriefResponse(routeTimes) {
-    var response = "There's also a ";
+    var response = "There's also ";
     while (routeTimes.length) {
         var routeTime = routeTimes.pop();
-        var route = routeTime[0];
+        var route = sanitizeRoute(routeTime[0]);
         var time = routeTime[1];
-        response += route +" in " + time + " "; 
+        if (routeTimes.length == 0) // last one, grammar is important
+            response += "and "
+        response += "a " + route +" in " + time + " "; 
         response += (time == "NOW") ? "mother fucker, " : 
                     (time == 1) ?  "minute, " : "minutes, ";
     }
     return response;
+}
+
+function sanitizeRoute(route) {
+    if (route.slice(-1) == "E")
+        route = route.slice(0,-1) + " express";
+    return route;
 }
 
 function parseRoutesAndTimes($) {
